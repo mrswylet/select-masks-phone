@@ -10,17 +10,35 @@
 <body>
 <div class="select-masks-phone">
     <select class="select-masks-phone__selector">
-        <option data-mask="+7 (999) 999-99-99" selected>Россия</option>
-        <option data-mask="+38 (999) 999-99-99">Украина</option>
-        <option data-mask="+\9\9 (999) 999-99-99">Узбекистан</option>
+        <option data-mask="+7 (999) 999-99-99" selected value="RUS">Россия</option>
+        <option data-mask="+38 (999) 999-99-99" value="UKR">Украина</option>
+        <option data-mask="+\9\9 (999) 999-99-99" value="UZB">Узбекистан</option>
     </select>
-    <input type="text" class="select-masks-phone__input" value="+7 (994) 569-44-56">
+    <input type="text" class="select-masks-phone__input" value="+38 (555) 555-44-56">
 </div>
 
 <script>
     $(function () {
-        var $selector =  $('.select-masks-phone__selector');
-        var $input =  $('.select-masks-phone__input');
+        var $selector = $('.select-masks-phone__selector');
+        var $input = $('.select-masks-phone__input');
+
+        var regexpList = {
+            RUS: new RegExp('^(\\+?[78])'),
+            UKR: new RegExp('^(\\+?38)'),
+            UZB: new RegExp('^(\\+?99)'),
+        };
+
+        var valueTell = $input.val();
+        var selectedKod = getCountryKod(valueTell);
+        if (selectedKod !== '') {
+            var $targetOption = $selector.find('option[value='+selectedKod+']');
+            $targetOption.prop('selected', true);
+
+            if(selectedKod === 'RUS') {
+                var correctTell = valueTell.replace(regexpList[selectedKod], '+7');
+                $input.val(correctTell);
+            }
+        }
 
         var mask = $selector.find('option:selected').data('mask');
         setMaskInput(mask);
@@ -32,6 +50,19 @@
 
         function setMaskInput(mask) {
             $input.inputmask(mask)
+        }
+
+        function getCountryKod(valueTell) {
+            var kodList = Object.keys(regexpList);
+            for (var i = 0; i < kodList.length; i++) {
+                var kod = kodList[i];
+                var regexp = regexpList[kod];
+                var result = regexp.test(valueTell);
+                if (result) {
+                    return kod;
+                }
+            }
+            return '';
         }
     });
 </script>
