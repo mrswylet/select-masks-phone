@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>select masks phone</title>
+    <link rel="stylesheet" href="">
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="jquery.inputmask.min.js"></script>
+</head>
+<body>
+<div class="select-masks-phone">
+    <select class="select-masks-phone__selector">
+        <option data-mask="+7 (999) 999-99-99" selected>Россия</option>
+        <option data-mask="+38 (999) 999-99-99">Украина</option>
+        <option data-mask="+\9\9 (999) 999-99-99">Узбекистан</option>
+    </select>
+    <input type="text" class="select-masks-phone__input" value="+7 (994) 569-44-56">
+</div>
+
+<script>
+    $(function () {
+        var $selector =  $('.select-masks-phone__selector');
+        var $input =  $('.select-masks-phone__input');
+
+        var mask = $selector.find('option:selected').data('mask');
+        setMaskInput(mask);
+
+        $selector.on('change', function () {
+            var mask = $selector.find('option:selected').data('mask');
+            setMaskInput(mask)
+        });
+
+        function setMaskInput(mask) {
+            $input.inputmask(mask)
+        }
+    });
+</script>
+</body>
+</html>
