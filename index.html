@@ -14,57 +14,118 @@
         <option data-mask="+38 (999) 999-99-99" value="UKR">Украина</option>
         <option data-mask="+\9\9 (999) 999-99-99" value="UZB">Узбекистан</option>
     </select>
-    <input type="text" class="select-masks-phone__input" value="+38 (555) 555-44-56">
+    <input type="text" class="select-masks-phone__input" value="+99 (555) 555-44-56" placeholder="+X (___) ___-__-__">
 </div>
 
 <script>
+    'use strict';
+
     $(function () {
         var $selector = $('.select-masks-phone__selector');
         var $input = $('.select-masks-phone__input');
-
         var regexpList = {
             RUS: new RegExp('^(\\+?[78])'),
             UKR: new RegExp('^(\\+?38)'),
             UZB: new RegExp('^(\\+?99)'),
         };
 
-        var valueTell = $input.val();
-        var selectedKod = getCountryKod(valueTell);
-        if (selectedKod !== '') {
-            var $targetOption = $selector.find('option[value='+selectedKod+']');
-            $targetOption.prop('selected', true);
-
-            if(selectedKod === 'RUS') {
-                var correctTell = valueTell.replace(regexpList[selectedKod], '+7');
-                $input.val(correctTell);
-            }
-        }
-
-        var mask = $selector.find('option:selected').data('mask');
-        setMaskInput(mask);
-
-        $selector.on('change', function () {
-            var mask = $selector.find('option:selected').data('mask');
-            setMaskInput(mask)
-        });
-
-        function setMaskInput(mask) {
-            $input.inputmask(mask)
-        }
-
-        function getCountryKod(valueTell) {
-            var kodList = Object.keys(regexpList);
-            for (var i = 0; i < kodList.length; i++) {
-                var kod = kodList[i];
-                var regexp = regexpList[kod];
-                var result = regexp.test(valueTell);
-                if (result) {
-                    return kod;
-                }
-            }
-            return '';
-        }
+        new SelectMasksPhone(regexpList, $input, $selector);
     });
+
+
+    /**
+     *
+     * @param regexpCountryKodList {object}
+     * @param $input {jQuery}
+     * @param $select {jQuery}
+     */
+    function SelectMasksPhone(regexpCountryKodList, $input, $select) {
+        this.regexpList = regexpCountryKodList || {};
+        this.$input = $input || $();
+        this.$select = $select || $();
+
+        if (!this.$input.inputmask) {
+            return;
+        }
+
+        var valueTell = this.$input.val();
+        var selectedKod = this.getCountryKod(valueTell);
+        this.setTargetOption(selectedKod);
+        this.transformRussiaTell(selectedKod, valueTell);
+        this.setMaskInput();
+
+        this.$select.on('change', function () {
+            this.setMaskInput();
+        }.bind(this));
+    }
+
+    /**
+     *
+     */
+    SelectMasksPhone.prototype.setMaskInput = function () {
+        var getmetadata = this.$input.inputmask('getmetadata');
+        var tellSource = null;
+        if (getmetadata) {
+            var kod = getmetadata.replace('(999) 999-99-99', '').replace(/\\/g, '').trim();
+            tellSource = this.$input.val().replace(kod, '').trim();
+        }
+
+        this.$input.inputmask('remove');
+
+        if (tellSource) {
+            this.$input.val(tellSource);
+        }
+
+        var mask = this.$select.find('option:selected').data('mask');
+        var placeholder = mask
+            .replace('(999) 999-99-99', '(___) ___-__-__')
+            .replace(/\\/g, '');
+
+        this.$input.attr('placeholder', placeholder);
+        this.$input.inputmask(mask);
+    };
+
+    /**
+     *
+     * @param selectedKod
+     */
+    SelectMasksPhone.prototype.setTargetOption = function (selectedKod) {
+        if (selectedKod === '') {
+            return;
+        }
+        var $targetOption = this.$select.find('option[value=' + selectedKod + ']');
+        $targetOption.prop('selected', true);
+    };
+
+    /**
+     *
+     * @param selectedKod
+     * @param valueTell
+     */
+    SelectMasksPhone.prototype.transformRussiaTell = function (selectedKod, valueTell) {
+        if (selectedKod === 'RUS') {
+            var correctTell = valueTell.replace(this.regexpList[selectedKod], '+7');
+            this.$input.val(correctTell);
+        }
+    };
+
+    /**
+     *
+     * @param valueTell
+     * @returns {string}
+     */
+    SelectMasksPhone.prototype.getCountryKod = function (valueTell) {
+        var kodList = Object.keys(this.regexpList);
+        for (var i = 0; i < kodList.length; i++) {
+            var kod = kodList[i];
+            var regexp = this.regexpList[kod];
+            var result = regexp.test(valueTell);
+            if (result) {
+                return kod;
+            }
+        }
+        return '';
+    };
 </script>
 </body>
 </html>
