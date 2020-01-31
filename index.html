@@ -14,7 +14,7 @@
         <option data-mask="+38 (999) 999-99-99" value="UKR">Украина</option>
         <option data-mask="+\9\9 (999) 999-99-99" value="UZB">Узбекистан</option>
     </select>
-    <input type="text" class="select-masks-phone__input" value="+38 (555) 555-44-56">
+    <input type="text" class="select-masks-phone__input" value="+38 (555) 555-44-56" placeholder="+X (___) ___-__-__">
 </div>
 
 <script>
@@ -49,7 +49,12 @@
         });
 
         function setMaskInput(mask) {
-            $input.inputmask(mask)
+            $input.inputmask('remove');
+            var placeholder = mask
+                .replace('(999) 999-99-99', '(___) ___-__-__')
+                .replace(/\\/g, '');
+            $input.attr('placeholder', placeholder);
+            $input.inputmask(mask);
         }
 
         function getCountryKod(valueTell) {
